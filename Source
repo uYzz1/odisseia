@@ -3593,19 +3593,22 @@ function Fatality:CreateElements(Parent : Frame , ZIndex : number , Event : Bind
 		return Respons;
 	end;
 
-	function elements:AddToggleKeybind(data)
+	function Section:AddToggleKeybind(data)
+		-- Cria o toggle
 		local toggle = self:AddToggle({
 			Name = data.Name,
 			Default = data.Default,
 			Callback = data.Callback
 		})
 
+		-- Cria o keybind
 		local keybind = self:AddKeybind({
 			Name = data.Name,
 			Default = data.Keybind,
 			Callback = data.KeybindCallback
 		})
 
+		-- Retorna os dois objetos juntos
 		return {
 			Toggle = toggle,
 			Keybind = keybind
