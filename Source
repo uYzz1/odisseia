@@ -141,7 +141,7 @@ cloneref = cloneref or function(i) return i; end;
 clonefunction = clonefunction or function(...) return ...; end;
 hookfunction = hookfunction or function(a,b) return a; end;
 getgenv = getgenv or getfenv;
-protect_gui = protect_gui or protectgui or (syn and syn.protect_gui) or function(gui) end;
+protect_gui = protect_gui or protectgui or (syn and syn.protect_gui) or function() end;
 getgenv().LPH_NO_VIRTUALIZE = LPH_NO_VIRTUALIZE or function(f) return f end;
 
 if game:GetService('RunService'):IsStudio() then
@@ -1368,7 +1368,7 @@ function Fatality:CreateOption(OptionButton: ImageButton): Elements
 			Bindable:SetAttribute('V',true);
 			Bindable:Fire(true);
 
-			local size = math.min(math.max(UIListLayout.AbsoluteContentSize.Y + 15, 0), 200)
+			local size = math.clamp(UIListLayout.AbsoluteContentSize.Y + 15,0,200)
 
 			ExtElementFrame.Position = UDim2.fromOffset(OptionButton.AbsolutePosition.X + 100, OptionButton.AbsolutePosition.Y + (size / 2))
 
@@ -1391,7 +1391,7 @@ function Fatality:CreateOption(OptionButton: ImageButton): Elements
 
 			SPAWN_THREAD = task.spawn(function()
 				while true do task.wait(0.1)
-					local size = math.min(math.max(UIListLayout.AbsoluteContentSize.Y + 15, 0), 200)
+					local size = math.clamp(UIListLayout.AbsoluteContentSize.Y + 15,0,200)
 					local ud = UDim2.fromOffset(OptionButton.AbsolutePosition.X + 100, OptionButton.AbsolutePosition.Y + (size / 2));
 
 					Fatality:CreateAnimation(ExtElementFrame,0.35,{
@@ -1985,7 +1985,7 @@ function Fatality:CreateColorPicker(ColorBox: Frame,Transparency, Callback)
 				while (UserInputService:IsMouseButtonPressed(Enum.UserInputType.MouseButton1) or IsPressM1) do task.wait()
 					local ColorY = ColorRedGreenBlue.AbsolutePosition.Y
 					local ColorYM = ColorY + ColorRedGreenBlue.AbsoluteSize.Y;
-					local Value = math.min(math.max(Mouse.Y, ColorY), ColorYM)
+					local Value = math.clamp(Mouse.Y, ColorY, ColorYM)
 					local Code = ((Value - ColorY) / (ColorYM - ColorY));
 
 					local Color = Color3.fromHSV(Code, CodeH, CodeV);
@@ -2018,7 +2018,7 @@ function Fatality:CreateColorPicker(ColorBox: Frame,Transparency, Callback)
 				IsPressM1 = true;
 
 				while (UserInputService:IsMouseButtonPressed(Enum.UserInputType.MouseButton1) or IsPressM1) do task.wait()
-					local transparency = math.min(math.max((((Mouse.X) - ColorOpc.AbsolutePosition.X) / ColorOpc.AbsoluteSize.X), 0), 1);
+					local transparency = math.clamp((((Mouse.X) - ColorOpc.AbsolutePosition.X) / ColorOpc.AbsoluteSize.X), 0, 1);
 
 					Fatality:CreateAnimation(ColorOptSlide,0.35,{
 						Position = UDim2.new(transparency, 0, 0.5, 0)
@@ -2038,9 +2038,9 @@ function Fatality:CreateColorPicker(ColorBox: Frame,Transparency, Callback)
 				while (UserInputService:IsMouseButtonPressed(Enum.UserInputType.MouseButton1) or IsPressM1) do task.wait();
 					local PosX = ColorPickBox.AbsolutePosition.X
 					local ScaleX = PosX + ColorPickBox.AbsoluteSize.X
-					local Value, PosY = math.min(math.max(Mouse.X, PosX), ScaleX), ColorPickBox.AbsolutePosition.Y
+					local Value, PosY = math.clamp(Mouse.X, PosX, ScaleX), ColorPickBox.AbsolutePosition.Y
 					local ScaleY = PosY + ColorPickBox.AbsoluteSize.Y
-					local Vals = math.min(math.max(Mouse.Y, PosY), ScaleY)
+					local Vals = math.clamp(Mouse.Y, PosY, ScaleY)
 
 					CodeH = (Value - PosX) / (ScaleX - PosX);
 					CodeV = (1 - ((Vals - PosY) / (ScaleY - PosY)));
@@ -2147,7 +2147,7 @@ function Fatality:CreateDropdown(Parent: Frame, Default: string | {[string]: boo
 					DropdownItemFrame.Position = UDim2.fromOffset(Parent.AbsolutePosition.X,Parent.AbsolutePosition.Y + (Parent.AbsoluteSize.Y * 5))
 
 					Fatality:CreateAnimation(DropdownItemFrame,0.35,{
-						Size = UDim2.new(0, 175, 0, math.min(math.max(baseSize, 0), 200))
+						Size = UDim2.new(0, 175, 0, math.clamp(baseSize,0,200))
 					})
 				end;
 			end)
@@ -2723,7 +2723,7 @@ function Fatality:CreateElements(Parent : Frame , ZIndex : number , Event : Bind
 		local IsHold = false;
 
 		local function update(Input)
-			local SizeScale = math.min(math.max((((Input.Position.X) - ValueFrame.AbsolutePosition.X) / ValueFrame.AbsoluteSize.X), 0), 1);
+			local SizeScale = math.clamp((((Input.Position.X) - ValueFrame.AbsolutePosition.X) / ValueFrame.AbsoluteSize.X), 0, 1);
 			local Main = ((Config.Max - Config.Min) * SizeScale) + Config.Min;
 			local Value = Fatality:Rounding(Main,Config.Round);
 			local PositionX = UDim2.fromScale(SizeScale, 1);
@@ -3049,34 +3049,14 @@ function Fatality:CreateElements(Parent : Frame , ZIndex : number , Event : Bind
 		return Respons;
 	end;
 
-	function Elements:AddDropdown(Config)
-    local dropdown = {
-        Name = Config.Name,
-        Values = Config.Values or {},
-        Default = Config.Default or "",
-        Callback = Config.Callback,
-        Multi = Config.Multi or false
-    }
-
-    function dropdown:Update(newProps)
-        if newProps.Values then
-            self.Values = newProps.Values
-        end
-        if newProps.Default then
-            self.Default = newProps.Default
-        end
-        if self.Callback then
-            self.Callback(self.Default)
-        end
-    end
-    
-
-    return dropdown
-	end
-   
-
-
-    
+	function elements:AddDropdown(Config: Dropdown)
+		Config = Config or {};
+		Config.Name = Config.Name or "Dropdown";
+		Config.Option = Config.Option or false;
+		Config.Default = Config.Default or nil;
+		Config.Callback = Config.Callback or function(any) end;
+		Config.Values = Config.Values or {};
+		Config.Multi = Config.Multi or false;
 
 		local DataParser = function(value)
 			if not value then return 'None'; end;
@@ -3317,23 +3297,6 @@ function Fatality:CreateElements(Parent : Frame , ZIndex : number , Event : Bind
 
 		if Config.Flag then
 			Fatality.WindowFlags[FatalWindow][Config.Flag.."Dropdown"] = Respons;
-		end;
-
-		-- Adiciona método Update para compatibilidade
-		Respons.Update = function(newProps)
-			if newProps.Values then
-				Config.Values = newProps.Values;
-				res:set_data(Config.Values);
-				if not Config.AutoUpdate then
-					res:refresh();
-				end
-			end
-			if newProps.Default then
-				Config.Default = newProps.Default;
-				Value_Text.Text = DataParser(Config.Default);
-				res:change_default(Config.Default);
-				Config.Callback(Config.Default);
-			end
 		end;
 
 		return Respons;
@@ -5429,7 +5392,7 @@ function Fatality.new(Window: Window)
 
 			UIListLayout:GetPropertyChangedSignal('AbsoluteContentSize'):Connect(function()
 				local all = (#ScrollingFrame:GetChildren() - 1);
-				local scale = math.min(math.max((all * (10 + UIListLayout.Padding.Offset)) + (Config.Height + UIListLayout.Padding.Offset), 25), 400);
+				local scale = math.clamp((all * (10 + UIListLayout.Padding.Offset)) + (Config.Height + UIListLayout.Padding.Offset),25,400);
 
 				if Menu.AutoFill then
 					ListBox.Size = UDim2.new(1,0,0,scale / 2.5);
@@ -6855,105 +6818,5 @@ function Fatality:CreateNotifier(): Notifier
 end;
 
 Fatality.FATALITY_PID = Fatality:RandomString();
-
--- Source.lua adaptada para suportar Element e Add*
-local Fatality = {}
-
--- Construtor principal
-function Fatality:new(props)
-    local window = {
-        Name = props.Name or "Window",
-        Visible = true
-    }
-
-    --------------------------------------------------------------------
-    -- MÉTODO NOVO: AddMenu (wrapper)
-    --------------------------------------------------------------------
-    function window:AddMenu(menuProps)
-        local menu = {
-            Name = menuProps.Name or "Menu"
-        }
-
-        -- Wrapper AddSection
-        function menu:AddSection(sectionProps)
-            local section = {
-                Name = sectionProps.Name or "Section"
-            }
-
-            -- Wrappers para elementos
-            function section:AddToggle(toggleProps)
-                -- Chama o sistema original Element
-                return Element:Add("Toggle", toggleProps)
-            end
-
-            function section:AddSlider(sliderProps)
-                return Element:Add("Slider", sliderProps)
-            end
-
-            function section:AddDropdown(dropdownProps)
-                local dropdown = Element:Add("Dropdown", dropdownProps)
-
-                -- Adiciona método Update para compatibilidade
-                function dropdown:Update(newProps)
-                    self.Values = newProps.Values or self.Values
-                end
-
-                return dropdown
-            end
-
-            function section:AddButton(buttonProps)
-                return Element:Add("Button", buttonProps)
-            end
-
-            function section:AddKeybind(keybindProps)
-                return Element:Add("Keybind", keybindProps)
-            end
-
-            function section:AddColorPicker(colorProps)
-                return Element:Add("ColorPicker", colorProps)
-            end
-
-            return section
-        end
-
-        return menu
-    end
-
-    -- Controle de visibilidade
-    function window:SetVisible(state)
-        self.Visible = state
-    end
-
-    return window
-end
-
--- Loader
-function Fatality:Loader(props)
-    print("Loader iniciado:", props.Name or "Hub")
-end
-
--- Notificações
-function Fatality:CreateNotifier()
-    local notifier = {}
-    function notifier:Notify(props)
-        print("[NOTIFY]", props.Title, "-", props.Content)
-    end
-    return notifier
-end
-
---------------------------------------------------------------------
--- Mantém compatibilidade com o sistema original Element
---------------------------------------------------------------------
--- Exemplo simples de implementação de Element
-Element = {}
-
-function Element:Add(typeName, props)
-    local obj = {
-        Type = typeName,
-        Props = props
-    }
-    print("Elemento criado:", typeName, props.Name or "")
-    return obj
-end
 
 return Fatality;
