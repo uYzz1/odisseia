@@ -61,6 +61,10 @@ export type Elements = {
 	AddKeybind: (self,Config: Keybind) -> {
 		Option: Elements	
 	},
+	AddToggleKeybind: (self,Config: any) -> {
+		Toggle: any,
+		Keybind: any
+	},
 }
 
 export type Preview = {
@@ -3588,6 +3592,25 @@ function Fatality:CreateElements(Parent : Frame , ZIndex : number , Event : Bind
 
 		return Respons;
 	end;
+
+	function elements:AddToggleKeybind(data)
+		local toggle = self:AddToggle({
+			Name = data.Name,
+			Default = data.Default,
+			Callback = data.Callback
+		})
+
+		local keybind = self:AddKeybind({
+			Name = data.Name,
+			Default = data.Keybind,
+			Callback = data.KeybindCallback
+		})
+
+		return {
+			Toggle = toggle,
+			Keybind = keybind
+		}
+	end
 
 	return elements;
 end;
