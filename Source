@@ -4189,8 +4189,7 @@ end;
 
 function Fatality.new(Window: Window)
 	Window = Window or {};
-	Window.Name = Window.Name or "Yzz1 Hub
-";
+	Window.Name = Window.Name or "Yzz1 Hub";
 	Window.Scale = Window.Scale or UDim2.new(0, 750, 0, 500);
 	Window.Keybind = Window.Keybind or "Insert";
 	Window.Expire = Window.Expire or "never";
