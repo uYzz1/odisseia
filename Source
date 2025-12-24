@@ -1177,7 +1177,7 @@ end;
 
 function Fatality:CreateAnimation(Instance: Instance , Time: number , Style : Enum.EasingStyle , Property : {[string] : any}) : Tween
 	if not Property then
-		if typeof(Style) == 'table' then
+		if type(Style) == 'table' then
 			Property = Style;
 			Style = nil;
 		end;
@@ -1262,7 +1262,7 @@ function Fatality:CreateResponse(args: {[string] : (any) -> any})
 	local main = {};
 
 	for i,v in next , args do
-		if typeof(v) == 'function' then
+		if type(v) == 'function' then
 			main[i] = function(self , ...)
 				return v(...);
 			end;
@@ -2090,7 +2090,13 @@ end;
 function Fatality:AddDragBlacklist(Frame: Frame)
 	Frame.InputBegan:Connect(function(input)
 		if input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.MouseMovement then
-			local finder = table.find(Fatality.DragBlacklist , Frame);
+			local finder = nil
+			for i, v in ipairs(Fatality.DragBlacklist) do
+				if v == Frame then
+					finder = i
+					break
+				end
+			end
 
 			if not finder then
 				table.insert(Fatality.DragBlacklist , Frame);
@@ -2100,7 +2106,13 @@ function Fatality:AddDragBlacklist(Frame: Frame)
 
 	Frame.InputEnded:Connect(function(input)
 		if input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.MouseMovement then
-			local finder = table.find(Fatality.DragBlacklist , Frame);
+			local finder = nil
+			for i, v in ipairs(Fatality.DragBlacklist) do
+				if v == Frame then
+					finder = i
+					break
+				end
+			end
 
 			if finder then
 				table.remove(Fatality.DragBlacklist , finder);
@@ -2284,7 +2296,7 @@ function Fatality:CreateDropdown(Parent: Frame, Default: string | {[string]: boo
 				bth.Parent = ScrollingFrame;
 
 				if Multiplier then
-					if (typeof(Default) == 'table' and (Default[v] or table.find(Default,v))) or Default == v then
+					if (type(Default) == 'table' and (Default[v] or (function() for i, val in ipairs(Default) do if val == v then return i end end return nil end)())) or Default == v then
 						Selected[v] = true
 						bth.TextColor3 = Fatality.Colors.Main;
 					else
@@ -3067,7 +3079,7 @@ function Fatality:CreateElements(Parent : Frame , ZIndex : number , Event : Bind
 
 			local Out;
 
-			if typeof(value) == 'table' then
+			if type(value) == 'table' then
 				if #value > 0 then
 					local x = {};
 
@@ -3399,7 +3411,7 @@ function Fatality:CreateElements(Parent : Frame , ZIndex : number , Event : Bind
 
 		local GetItem = function(item)
 			if item then
-				if typeof(item) == 'EnumItem' then
+				if type(item) == 'userdata' then
 					return Keys[item.Name] or item.Name;
 				else
 					return Keys[tostring(item)] or tostring(item);
@@ -3519,7 +3531,7 @@ function Fatality:CreateElements(Parent : Frame , ZIndex : number , Event : Bind
 
 			IsBinding = false;
 
-			Config.Callback(typeof(Selected) == "string" and Selected or Selected.Name);
+			Config.Callback(type(Selected) == "string" and Selected or Selected.Name);
 		end);
 
 		local OpcToggle = function(value)
@@ -3615,27 +3627,7 @@ function Fatality:CreateElements(Parent : Frame , ZIndex : number , Event : Bind
 		}
 	end
 
-	function elements:AddToggleKeybind(data)
-		local row = self:AddSection({
-			Name = data.Name,
-			Position = 'left'
-		})
-
-		local toggle = row:AddToggle({
-			Name = data.Name,
-			Default = data.Default,
-			Callback = data.Callback
-		})
-
-		local keybind = row:AddKeybind({
-			Name = "",
-			Default = data.Keybind,
-			Callback = data.KeybindCallback
-		})
-
-		return { Toggle = toggle, Keybind = keybind }
-	end
-
+	
 	return elements;
 end;
 
@@ -4732,7 +4724,7 @@ function Fatality.new(Window: Window)
 		User_name.Text = name or Client.DisplayName;
 	end;
 
-	function Fatal:SetProfile(icon: string)
+	function Fatal:SetProfile(icon)
 		UserIcon.Image = icon or Players:GetUserThumbnailAsync(Client.UserId,Enum.ThumbnailType.HeadShot,Enum.ThumbnailSize.Size180x180);
 	end;
 
@@ -4790,7 +4782,7 @@ function Fatality.new(Window: Window)
 						if Value.Type == "String" then
 							Element:SetValue(tostring(Value.Value));
 						elseif Value.Type == "Boolean" then
-							Element:SetValue((typeof(Value.Value) == 'boolean' and Value.Value) or (Value.Value == "true" and true or false));
+							Element:SetValue((type(Value.Value) == 'boolean' and Value.Value) or (Value.Value == "true" and true or false));
 						elseif Value.Type == "Number" then
 							Element:SetValue(Value.Value);
 						elseif Value.Type == "Color3" then
@@ -4815,13 +4807,13 @@ function Fatality.new(Window: Window)
 			local ValueData = {};
 			local Value = v:GetValue();
 
-			if typeof(Value) == "string" then
+			if type(Value) == "string" then
 				ValueData.Type = "String";
 				ValueData.Value = Value;
-			elseif typeof(Value) == "boolean" then
+			elseif type(Value) == "boolean" then
 				ValueData.Type = "Boolean";
 				ValueData.Value = Value;
-			elseif typeof(Value) == "number" then
+			elseif type(Value) == "number" then
 				ValueData.Type = "Number";
 				ValueData.Value = Value;
 			elseif typeof(Value) == "Color3" then
@@ -4837,7 +4829,7 @@ function Fatality.new(Window: Window)
 
 					Transparency = Transparency
 				};
-			elseif typeof(Value) == "table" then
+			elseif type(Value) == "table" then
 				if Value.Color and Value.Transparency then
 					ValueData.Type = "Color3";
 
@@ -4869,7 +4861,7 @@ function Fatality.new(Window: Window)
 		return ConfigElement;
 	end;
 
-	function Fatal:AddMenu(Menu : Menu)
+	function Fatal:AddMenu(Menu)
 		Menu = Menu or {};
 		Menu.Name = Menu.Name or "EXAMPLE";
 		Menu.Icon = Menu.Icon or "eye";
@@ -5305,7 +5297,7 @@ function Fatality.new(Window: Window)
 			return MainBlock;
 		end;
 
-		function MenuLib:AddListBox(Config : Listbox)
+		function MenuLib:AddListBox(Config)
 			Config = Config or {};
 			Config.Name = Config.Name or "LIST BOX";
 			Config.Position = Config.Position or "left";
@@ -5642,7 +5634,7 @@ function Fatality.new(Window: Window)
 						bth.Parent = ScrollingFrame;
 
 						if Config.Multi then
-							if (typeof(Config.Default) == 'table' and (Config.Default[v] or table.find(Config.Default,v))) or Config.Default == v then
+							if (type(Config.Default) == 'table' and (Config.Default[v] or (function() for i, val in ipairs(Config.Default) do if val == v then return i end end return nil end)())) or Config.Default == v then
 								Config.Default[v] = true
 								bth.TextColor3 = Fatality.Colors.Main;
 								bth.TextTransparency = 0;
