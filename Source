@@ -6915,14 +6915,19 @@ function Fatality:new(props)
             end
 
             function section:AddDropdown(dropdownProps)
-                local dropdown = Element:Add("Dropdown", dropdownProps)
+                local Respons = Element:Add("Dropdown", dropdownProps)
 
                 -- Adiciona método Update para compatibilidade
-                function dropdown:Update(newProps)
-                    self.Values = newProps.Values or self.Values
+                Respons.Update = function(newProps)
+                    if newProps.Values then
+                        Respons.Values = newProps.Values or Respons.Values
+                    end
+                    if newProps.Default then
+                        Respons.Default = newProps.Default or Respons.Default
+                    end
                 end
 
-                return dropdown
+                return Respons
             end
 
             function section:AddButton(buttonProps)
