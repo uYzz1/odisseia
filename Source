@@ -3615,6 +3615,27 @@ function Fatality:CreateElements(Parent : Frame , ZIndex : number , Event : Bind
 		}
 	end
 
+	function elements:AddToggleKeybind(data)
+		local row = self:AddSection({
+			Name = data.Name,
+			Position = 'left'
+		})
+
+		local toggle = row:AddToggle({
+			Name = data.Name,
+			Default = data.Default,
+			Callback = data.Callback
+		})
+
+		local keybind = row:AddKeybind({
+			Name = "",
+			Default = data.Keybind,
+			Callback = data.KeybindCallback
+		})
+
+		return { Toggle = toggle, Keybind = keybind }
+	end
+
 	return elements;
 end;
 
