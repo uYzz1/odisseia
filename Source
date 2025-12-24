@@ -4189,7 +4189,7 @@ end;
 
 function Fatality.new(Window: Window)
 	Window = Window or {};
-	Window.Name = Window.Name or "FATALITY";
+	Window.Name = Window.Name or "Yzz1 Hub";
 	Window.Scale = Window.Scale or UDim2.new(0, 750, 0, 500);
 	Window.Keybind = Window.Keybind or "Insert";
 	Window.Expire = Window.Expire or "never";
@@ -6398,7 +6398,7 @@ end;
 
 function Fatality:Loader(Config: Loader)
 	Config = Config or {};
-	Config.Name = Config.Name or "FATALITY";
+	Config.Name = Config.Name or "Yzz1 Hub";
 	Config.Duration = Config.Duration or 3.5;
 	Config.Scale = Config.Scale or 3;
 
