@@ -3606,24 +3606,189 @@ function Fatality:CreateElements(Parent : Frame , ZIndex : number , Event : Bind
 	end;
 
 	function elements:AddToggleKeybind(data)
-		-- Cria o toggle
-		local toggle = self:AddToggle({
-			Name = data.Name,
-			Default = data.Default,
-			Callback = data.Callback
-		})
+		data = data or {};
+		data.Name = data.Name or "ToggleKeybind";
+		data.Default = data.Default or false;
+		data.Keybind = data.Keybind or nil;
+		data.Callback = data.Callback or function() end;
+		data.KeybindCallback = data.KeybindCallback or function() end;
 
-		-- Cria o keybind
-		local keybind = self:AddKeybind({
-			Name = data.Name,
-			Default = data.Keybind,
-			Callback = data.KeybindCallback
-		})
+		local ToggleKeybind = Instance.new("Frame")
+		local UICorner = Instance.new("UICorner")
+		local Toggle_Name = Instance.new("TextLabel")
+		local ToggleFrame = Instance.new("Frame")
+		local UICorner_2 = Instance.new("UICorner")
+		local Toggle_Button = Instance.new("TextButton")
+		local KeybindFrame = Instance.new("Frame")
+		local UICorner_3 = Instance.new("UICorner")
+		local Keybind_Button = Instance.new("TextButton")
+		local KeybindText = Instance.new("TextLabel")
 
-		-- Retorna os dois objetos juntos
+		ToggleKeybind.Name = Fatality:RandomString()
+		ToggleKeybind.Parent = Parent
+		ToggleKeybind.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+		ToggleKeybind.BorderColor3 = Color3.fromRGB(0, 0, 0)
+		ToggleKeybind.BorderSizePixel = 0
+		ToggleKeybind.Size = UDim2.new(1, 0, 0, 25)
+		ToggleKeybind.ZIndex = ZIndex
+
+		UICorner.CornerRadius = UDim.new(0, 3)
+		UICorner.Parent = ToggleKeybind
+
+		Toggle_Name.Name = Fatality:RandomString()
+		Toggle_Name.Parent = ToggleKeybind
+		Toggle_Name.AnchorPoint = Vector2.new(0, 0.5)
+		Toggle_Name.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+		Toggle_Name.BackgroundTransparency = 1.000
+		Toggle_Name.BorderColor3 = Color3.fromRGB(0, 0, 0)
+		Toggle_Name.BorderSizePixel = 0
+		Toggle_Name.Position = UDim2.new(0, 10, 0.5, 0)
+		Toggle_Name.Size = UDim2.new(0.5, 0, 0, 15)
+		Toggle_Name.FontFace = Fatality.FontSemiBold
+		Toggle_Name.Text = data.Name
+		Toggle_Name.TextColor3 = Color3.fromRGB(255, 255, 255)
+		Toggle_Name.TextSize = 14.000
+		Toggle_Name.TextXAlignment = Enum.TextXAlignment.Left
+
+		ToggleFrame.Name = Fatality:RandomString()
+		ToggleFrame.Parent = ToggleKeybind
+		ToggleFrame.AnchorPoint = Vector2.new(1, 0.5)
+		ToggleFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+		ToggleFrame.BorderColor3 = Color3.fromRGB(0, 0, 0)
+		ToggleFrame.BorderSizePixel = 0
+		ToggleFrame.Position = UDim2.new(1, -70, 0.5, 0)
+		ToggleFrame.Size = UDim2.new(0, 40, 0, 15)
+		ToggleFrame.ZIndex = ZIndex + 1
+
+		UICorner_2.CornerRadius = UDim.new(0, 2)
+		UICorner_2.Parent = ToggleFrame
+
+		Toggle_Button.Name = Fatality:RandomString()
+		Toggle_Button.Parent = ToggleFrame
+		Toggle_Button.AnchorPoint = Vector2.new(0, 0.5)
+		Toggle_Button.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+		Toggle_Button.BackgroundTransparency = 1.000
+		Toggle_Button.BorderColor3 = Color3.fromRGB(0, 0, 0)
+		Toggle_Button.BorderSizePixel = 0
+		Toggle_Button.Position = UDim2.new(0, 2, 0.5, 0)
+		Toggle_Button.Size = UDim2.new(0, 15, 0, 15)
+		Toggle_Button.FontFace = Fatality.FontSemiBold
+		Toggle_Button.Text = ""
+		Toggle_Button.TextColor3 = Color3.fromRGB(255, 255, 255)
+		Toggle_Button.TextSize = 14.000
+		Toggle_Button.ZIndex = ZIndex + 2
+
+		KeybindFrame.Name = Fatality:RandomString()
+		KeybindFrame.Parent = ToggleKeybind
+		KeybindFrame.AnchorPoint = Vector2.new(1, 0.5)
+		KeybindFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+		KeybindFrame.BorderColor3 = Color3.fromRGB(0, 0, 0)
+		KeybindFrame.BorderSizePixel = 0
+		KeybindFrame.Position = UDim2.new(1, -25, 0.5, 0)
+		KeybindFrame.Size = UDim2.new(0, 20, 0, 15)
+		KeybindFrame.ZIndex = ZIndex + 1
+
+		UICorner_3.CornerRadius = UDim.new(0, 2)
+		UICorner_3.Parent = KeybindFrame
+
+		Keybind_Button.Name = Fatality:RandomString()
+		Keybind_Button.Parent = KeybindFrame
+		Keybind_Button.AnchorPoint = Vector2.new(0, 0.5)
+		Keybind_Button.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+		Keybind_Button.BackgroundTransparency = 1.000
+		Keybind_Button.BorderColor3 = Color3.fromRGB(0, 0, 0)
+		Keybind_Button.BorderSizePixel = 0
+		Keybind_Button.Position = UDim2.new(0, 2, 0.5, 0)
+		Keybind_Button.Size = UDim2.new(0, 15, 0, 15)
+		Keybind_Button.FontFace = Fatality.FontSemiBold
+		Keybind_Button.Text = ""
+		Keybind_Button.TextColor3 = Color3.fromRGB(255, 255, 255)
+		Keybind_Button.TextSize = 14.000
+		Keybind_Button.ZIndex = ZIndex + 2
+
+		KeybindText.Name = Fatality:RandomString()
+		KeybindText.Parent = KeybindFrame
+		KeybindText.AnchorPoint = Vector2.new(1, 0.5)
+		KeybindText.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+		KeybindText.BackgroundTransparency = 1.000
+		KeybindText.BorderColor3 = Color3.fromRGB(0, 0, 0)
+		KeybindText.BorderSizePixel = 0
+		KeybindText.Position = UDim2.new(1, -2, 0.5, 0)
+		KeybindText.Size = UDim2.new(0, 15, 0, 15)
+		KeybindText.FontFace = Fatality.FontSemiBold
+		KeybindText.Text = data.Keybind and data.Keybind.Name or "None"
+		KeybindText.TextColor3 = Color3.fromRGB(255, 255, 255)
+		KeybindText.TextSize = 12.000
+		KeybindText.TextXAlignment = Enum.TextXAlignment.Right
+
+		-- Toggle functionality
+		local Toggled = data.Default or false
+		local IsBinding = false
+
+		local function UpdateToggleVisual(state)
+			if state then
+				Fatality:CreateAnimation(Toggle_Button,0.25,{
+					Position = UDim2.new(0, 22, 0.5, 0)
+				})
+				Fatality:CreateAnimation(ToggleFrame,0.25,{
+					BackgroundColor3 = Fatality.Colors.Main
+				})
+			else
+				Fatality:CreateAnimation(Toggle_Button,0.25,{
+					Position = UDim2.new(0, 2, 0.5, 0)
+				})
+				Fatality:CreateAnimation(ToggleFrame,0.25,{
+					BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+				})
+			end
+		end
+
+		Toggle_Button.MouseButton1Click:Connect(function()
+			Toggled = not Toggled
+			UpdateToggleVisual(Toggled)
+			data.Callback(Toggled)
+		end)
+
+		-- Keybind functionality
+		Keybind_Button.MouseButton1Click:Connect(function()
+			if not IsBinding then
+				IsBinding = true
+				KeybindText.Text = "..."
+				
+				local connection
+				connection = UserInputService.InputBegan:Connect(function(input, gameProcessed)
+					if gameProcessed or input.UserInputType ~= Enum.UserInputType.Keyboard then return end
+					
+					IsBinding = false
+					KeybindText.Text = input.KeyCode.Name
+					data.KeybindCallback(input.KeyCode)
+					connection:Disconnect()
+				end)
+			end
+		end)
+
+		-- Initialize toggle state
+		UpdateToggleVisual(Toggled)
+
 		return {
-			Toggle = toggle,
-			Keybind = keybind
+			Toggle = {
+				Set = function(self, value)
+					Toggled = value
+					UpdateToggleVisual(Toggled)
+				end,
+				Get = function(self)
+					return Toggled
+				end
+			},
+			Keybind = {
+				Set = function(self, key)
+					KeybindText.Text = key.Name
+				end,
+				Get = function(self)
+					return KeybindText.Text
+				end
+			},
+			Main = ToggleKeybind
 		}
 	end
 
@@ -3631,7 +3796,7 @@ function Fatality:CreateElements(Parent : Frame , ZIndex : number , Event : Bind
 	return elements;
 end;
 
-function Fatality:CreateConfigWindow(Root: ScreenGui , Fatal , Button: ImageButton)
+function Fatality:CreateConfigWindow(Root, Fatal, Button)
 
 	local ConfigWindowFrame = Instance.new("Frame")
 	local UICorner = Instance.new("UICorner")
