@@ -3058,22 +3058,45 @@ function Fatality:CreateElements(Parent : Frame , ZIndex : number , Event : Bind
         Multi = Config.Multi or false
     }
 
-    -- 🔧 Método Update adicionado
-    function dropdown:Update(newProps)
-        if newProps.Values then
-            self.Values = newProps.Values
-        end
-        if newProps.Default then
-            self.Default = newProps.Default
-        end
-        if self.Callback then
-            self.Callback(self.Default)
-        end
-    end
-    
+    -- Criação visual e lógica do dropdown...
+    -- (todo o código que monta o Frame, ValueFrame, etc.)
 
-    return Respons
+    local Respons = Fatality:CreateResponse({
+        Rename = function(new_name)
+            -- ...
+        end,
+        GetValue = function()
+            return Config.Default;
+        end,
+        SetValue = function(def)
+            Config.Default = def;
+            -- ...
+        end,
+        SetData = function(def)
+            Config.Values = def;
+            -- ...
+        end,
+        Update = function(newProps)
+            if newProps.Values then
+                Config.Values = newProps.Values;
+                -- ...
+            end
+            if newProps.Default then
+                Config.Default = newProps.Default;
+                -- ...
+            end
+        end,
+        Flag = Config.Flag and Config.Flag.."Dropdown",
+        Option = (Config.Option and Fatality:CreateOption(OptionButton)) or nil;
+    })
+
+    if Config.Flag then
+        Fatality.WindowFlags[FatalWindow][Config.Flag.."Dropdown"] = Respons;
+    end
+
+    return Respons -- ✅ ESSA LINHA É CRUCIAL
 end
+
    
 
 
