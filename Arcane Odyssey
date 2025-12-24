@@ -1,0 +1,1027 @@
+-- Serviços
+game = game
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
+local workspace = game:GetService("Workspace")
+local LocalPlayer = Players.LocalPlayer
+
+-- Funções globais
+local function safeTableClone(tbl)
+    local copy = {}
+    for k, v in pairs(tbl) do
+        if type(v) == "table" then
+            copy[k] = safeTableClone(v)
+        else
+            copy[k] = v
+        end
+    end
+    return copy
+end
+
+-- Inicializar variáveis globais
+local configName = ""
+local espEnabled = false
+getgenv().espEnabled = false
+getgenv().autoFarmEnabled = false
+getgenv().autoParryEnabled = false
+getgenv().autoBlockEnabled = false
+
+-- Função tick para compatibilidade
+if not tick then
+    tick = function()
+        return os.clock()
+    end
+end
+
+-- Funções globais
+if not task then
+    task = {
+        wait = function(seconds)
+            local endTime = tick() + (seconds or 0)
+            repeat wait() until tick() >= endTime
+        end,
+        delay = function(seconds, func)
+            spawn(function()
+                task.wait(seconds)
+                func()
+            end)
+        end
+    }
+end
+
+if not spawn then
+    spawn = function(func)
+        local thread = coroutine.create(func)
+        coroutine.resume(thread)
+        return thread
+    end
+end
+
+-- Constantes globais
+if not Color3 then
+    Color3 = {
+        fromRGB = function(r, g, b)
+            return {R = r/255, G = g/255, B = b/255, r = r/255, g = g/255, b = b/255}
+        end,
+        new = function(r, g, b)
+            return {R = r or 1, G = g or 1, B = b or 1, r = r or 1, g = g or 1, b = b or 1}
+        end
+    }
+end
+if not Instance then
+    Instance = {
+        new = function(className)
+            return {ClassName = className}
+        end
+    }
+end
+if not wait then wait = function() end end
+
+-- Inicialização do Fatality
+local Fatality = loadstring(game:HttpGet("https://raw.githubusercontent.com/4lpaca-pin/Fatality/refs/heads/main/src/source.luau"))()
+local Notification = Fatality:CreateNotifier()
+
+Fatality:Loader({
+    Name = "Yzz1 Hub",
+    Duration = 4
+})
+
+Notification:Notify({
+    Title = "Yzz1 Hub",
+    Content = "Hello, "..game.Players.LocalPlayer.DisplayName..' Welcome back!',
+    Icon = "clipboard"
+})
+
+local Window = Fatality:new({
+    Name = "Yzz1 Hub",
+    Expire = "never",
+});
+
+local Rage = Window:AddMenu({
+    Name = "Main",
+    Icon = "skull"
+})
+
+local Legit = Window:AddMenu({
+    Name = "World",
+    Icon = "target"
+})
+
+local Visual = Window:AddMenu({
+    Name = "Visual",
+    Icon = "eye"
+})
+
+-- Adicionar menu de Configuração
+getgenv().Configs = {}
+local Config = Window:AddMenu({
+    Name = "Config",
+    Icon = "settings"
+})
+
+-- Verifica se o objeto Config existe e tem o método AddSection
+if not Config or typeof(Config.AddSection) ~= "function" then
+    warn("Erro: Objeto Config ou método AddSection não encontrado no Fatality")
+    return
+end
+
+-- Seção de Configuração
+local ConfigSection = Config:AddSection({
+    Name = "Configuration",
+    Position = 'left'
+})
+
+-- Função para salvar a configuração
+local function saveConfig(name)
+    if not name or name == "" then return end
+    
+    -- Criar uma cópia profunda da configuração atual
+    local config = {
+        espEnabled = espEnabled,
+        maxDistance = maxDistance,
+        -- Adicione aqui outras configurações que deseja salvar
+    }
+    
+    -- Salvar a configuração
+    getgenv().Configs[name] = config
+    
+    -- Salvar no armazenamento local (se disponível)
+    if writefile and readfile then
+        pcall(function()
+            writefile("Yzz1Hub_Configs.json", game:GetService("HttpService"):JSONEncode(getgenv().Configs))
+        end)
+    end
+    
+    return true
+end
+
+-- Função para carregar configurações salvas
+local function loadConfigs()
+    if readfile and writefile then
+        pcall(function()
+            if isfile("Yzz1Hub_Configs.json") then
+                local success, data = pcall(function()
+                    return game:GetService("HttpService"):JSONDecode(readfile("Yzz1Hub_Configs.json"))
+                end)
+                if success and data then
+                    getgenv().Configs = data
+                end
+            end
+        end)
+    end
+end
+
+-- Carregar configurações ao iniciar
+loadConfigs()
+
+-- Dropdown para carregar configurações salvas
+local configsList = {}
+local configsDropdown = ConfigSection:AddDropdown({
+    Name = "Configurações Salvas",
+    Default = "",
+    Values = configsList,
+    Callback = function(selected)
+        configName = selected
+        loadConfigs()
+    end
+})
+
+-- Função para atualizar a lista de configurações
+local function updateConfigsList()
+    local configNames = {}
+    for name, _ in pairs(getgenv().Configs) do
+        table.insert(configNames, name)
+    end
+    table.sort(configNames)
+    configsDropdown:Update({
+        Values = configNames
+    })
+end
+
+-- Variável para armazenar o nome da configuração
+local configNameInput = ""
+
+-- Input para o nome da configuração
+local nameInput
+nameInput = ConfigSection:AddInput({
+    Name = "Config Name",
+    Default = "",
+    Placeholder = "Enter config name...",
+    Callback = function(value)
+        configNameInput = value
+    end
+})
+
+-- Botão para salvar configuração
+ConfigSection:AddButton({
+    Name = "Create Config",
+    Callback = function()
+        if configNameInput == "" then
+            Notification:Notify({
+                Title = "Erro",
+                Content = "Digite um nome para a config",
+                Icon = "alert-triangle"
+            })
+            return
+        end
+
+        if getgenv().Configs[configNameInput] then
+            Notification:Notify({
+                Title = "Erro",
+                Content = "Config já existe",
+                Icon = "alert-triangle"
+            })
+            return
+        end
+
+        saveConfig(configNameInput)
+        updateConfigsList()
+
+        Notification:Notify({
+            Title = "Criada",
+            Content = "Config criada: "..configNameInput,
+            Icon = "check"
+        })
+    end
+})
+
+ConfigSection:AddButton({
+    Name = "Overwrite Config",
+    Callback = function()
+        if configName == "" then
+            Notification:Notify({
+                Title = "Erro",
+                Content = "Nenhuma config selecionada",
+                Icon = "alert-triangle"
+            })
+            return
+        end
+
+        saveConfig(configName)
+
+        Notification:Notify({
+            Title = "Sucesso",
+            Content = "Config sobrescrita: "..configName,
+            Icon = "check"
+        })
+    end
+})
+
+ConfigSection:AddButton({
+    Name = "Load Config",
+    Callback = function()
+        if configName == "" then return end
+
+        local config = getgenv().Configs[configName]
+        if not config then return end
+
+        espEnabled = config.espEnabled
+        maxDistance = config.maxDistance or 1000
+
+        if chestToggle then
+            chestToggle:Set(espEnabled)
+        end
+
+        Notification:Notify({
+            Title = "Carregada",
+            Content = "Config carregada: "..configName,
+            Icon = "check"
+        })
+    end
+})
+
+-- Botão para atualizar a lista de configurações
+ConfigSection:AddButton({
+    Name = "Refresh Configs",
+    Callback = updateConfigsList
+})
+
+-- Botão para deletar configuração
+ConfigSection:AddButton({
+    Name = "Deletar Config Atual",
+    Callback = function()
+        if configName ~= "" and getgenv().Configs[configName] then
+            getgenv().Configs[configName] = nil
+            updateConfigsList()
+            configName = ""
+            
+            -- Se era o auto load, limpar
+            if getgenv().AutoLoadConfig == configName then
+                getgenv().AutoLoadConfig = nil
+            end
+            
+            Notification:Notify({
+                Title = "Sucesso",
+                Content = "Configuração removida",
+                Icon = "trash-2"
+            })
+        else
+            Notification:Notify({
+                Title = "Erro",
+                Content = "Nenhuma configuração selecionada",
+                Icon = "alert-triangle"
+            })
+        end
+    end
+})
+
+-- Configuração de Auto Load
+ConfigSection:AddButton({
+    Name = "Set as Auto Load",
+    Callback = function()
+        if configName ~= "" and getgenv().Configs[configName] then
+            getgenv().AutoLoadConfig = configName
+            Notification:Notify({
+                Title = "Success",
+                Content = "Auto load set to: " .. configName,
+                Icon = "check"
+            })
+        else
+            Notification:Notify({
+                Title = "Error",
+                Content = "No config selected",
+                Icon = "alert-triangle"
+            })
+        end
+    end
+})
+
+-- Carregar configuração automática no início
+if getgenv().AutoLoadConfig and getgenv().Configs[getgenv().AutoLoadConfig] then
+    task.spawn(function()
+        wait(1) -- Esperar a UI carregar
+        local config = getgenv().Configs[getgenv().AutoLoadConfig]
+        espEnabled = config.espEnabled
+        maxDistance = config.maxDistance
+        
+        if chestToggle then
+            chestToggle:Set(config.espEnabled)
+        end
+        
+        Notification:Notify({
+            Title = "Auto Load",
+            Content = "Loaded config: " .. getgenv().AutoLoadConfig,
+            Icon = "check"
+        })
+    end)
+end
+
+-- Configuração do ESP
+local maxDistance = 1000 -- Distância máxima em studs
+local updateInterval = 0.2 -- Atualiza a cada 0.2 segundos (5 FPS) para melhor performance
+local lastUpdate = 0
+local textCache = {}
+local espEnabled = false -- Variável para controlar se o ESP está ativado
+local espObjects = {} -- Tabela para armazenar objetos do ESP
+
+-- Otimização: Cache para objetos processados
+local processedChests = {}
+local lastChestCheck = 0
+local checkInterval = 1 -- Verificar novos baús a cada 1 segundo
+
+-- Função para limpar o cache de baús processados
+local function clearProcessedChests()
+    for chest, _ in pairs(processedChests) do
+        if not chest or not chest.Parent then
+            processedChests[chest] = nil
+        end
+    end
+end
+
+-- Cores para diferentes tipos de baús
+local CHEST_COLORS = {
+    ["Treasure Chest"] = Color3.fromRGB(255, 170, 0),   -- Laranja
+    ["Golden Chest"] = Color3.fromRGB(255, 215, 0),     -- Dourado
+    ["Silver Chest"] = Color3.fromRGB(190, 190, 190),   -- Prata
+    ["Bronze Sealed Chest"] = Color3.fromRGB(160, 90, 60) -- Bronze
+}
+
+-- Função para formatar a distância
+local function formatDistance(distance)
+    return tostring(math.floor(distance + 0.5)) .. "m"
+end
+
+-- Função para criar ou atualizar o texto do ESP de Baús
+local function updateChestLabel(object, distance, color)
+    local label = object:FindFirstChild("ChestLabel")
+    
+    if not label and distance <= maxDistance then
+        label = Instance.new("BillboardGui")
+        label.Name = "ChestLabel"
+        label.AlwaysOnTop = true
+        label.Size = UDim2.new(0, 200, 0, 50)
+        label.StudsOffset = Vector3.new(0, 2, 0)
+        label.Adornee = object.PrimaryPart or object:FindFirstChildOfClass("BasePart")
+        label.Parent = object
+        
+        local textLabel = Instance.new("TextLabel")
+        textLabel.Name = "Label"
+        textLabel.Size = UDim2.new(1, 0, 0, 20)
+        textLabel.Position = UDim2.new(0.5, 0, 0, 0)
+        textLabel.AnchorPoint = Vector2.new(0.5, 0)
+        textLabel.BackgroundTransparency = 1
+        textLabel.TextColor3 = color or Color3.new(1, 1, 1)
+        textLabel.TextStrokeTransparency = 0.5
+        textLabel.TextSize = 14
+        textLabel.Font = Enum.Font.GothamBold
+        textLabel.Text = object.Name .. " (" .. formatDistance(distance) .. ")"
+        textLabel.Parent = label
+        
+        textCache[object] = textLabel
+    elseif label and distance <= maxDistance then
+        local textLabel = label:FindFirstChild("Label")
+        if textLabel then
+            textLabel.Text = object.Name .. " (" .. formatDistance(distance) .. ")"
+            textLabel.TextColor3 = color or Color3.new(1, 1, 1)
+        end
+    elseif label and distance > maxDistance then
+        label:Destroy()
+        textCache[object] = nil
+    end
+end
+
+-- Função para adicionar ESP a um baú
+local function addChestESP(object)
+    if not object or not object.Parent or object:FindFirstChild("ChestLabel") then 
+        return 
+    end
+    
+    local color = CHEST_COLORS[object.Name]
+    if not color then return end -- Só processa se for um baú conhecido
+    
+    local character = LocalPlayer.Character
+    if not character or not character:FindFirstChild("HumanoidRootPart") then 
+        return 
+    end
+    
+    local rootPart = character.HumanoidRootPart
+    local objectPart = object.PrimaryPart or object:FindFirstChildOfClass("BasePart")
+    
+    if not objectPart then 
+        return 
+    end
+    
+    local distance = (objectPart.Position - rootPart.Position).Magnitude
+    
+    if distance <= maxDistance then
+        -- Cria o highlight
+        local highlight = Instance.new("Highlight")
+        highlight.Name = "ChestESP"
+        highlight.Adornee = object
+        highlight.FillColor = color
+        highlight.FillTransparency = 0.7
+        highlight.OutlineTransparency = 0
+        highlight.OutlineColor = Color3.new(1, 1, 1)
+        highlight.Parent = object
+        
+        -- Atualiza o texto
+        updateChestLabel(object, distance, color)
+    end
+end
+
+-- Função para remover todos os ESPs de baús
+local function removeAllChestESP()
+    for obj, _ in pairs(textCache) do
+        if obj:FindFirstChild("ChestLabel") then
+            obj.ChestLabel:Destroy()
+        end
+        if obj:FindFirstChild("ChestESP") then
+            obj.ChestESP:Destroy()
+        end
+    end
+    textCache = {}
+end
+
+-- Função para atualizar todos os ESPs de baús visíveis
+local function updateChestESP()
+    if not espEnabled then return end
+    
+    local character = LocalPlayer.Character
+    if not character or not character:FindFirstChild("HumanoidRootPart") then 
+        return 
+    end
+    
+    local rootPart = character.HumanoidRootPart
+    local currentTime = tick()
+    
+    -- Atualiza apenas se passou o intervalo definido
+    if currentTime - lastUpdate < updateInterval then
+        return
+    end
+    
+    lastUpdate = currentTime
+    
+    -- Limpa ESPs antigos
+    removeAllChestESP()
+    
+    -- Verifica todos os objetos no workspace
+    for _, obj in ipairs(workspace:GetDescendants()) do
+        if obj:IsA("Model") and CHEST_COLORS[obj.Name] then
+            local objectPart = obj.PrimaryPart or obj:FindFirstChildOfClass("BasePart")
+            if objectPart then
+                local distance = (objectPart.Position - rootPart.Position).Magnitude
+                if distance <= maxDistance then
+                    addChestESP(obj)
+                end
+            end
+        end
+    end
+end
+
+-- Listener para novos baús
+workspace.DescendantAdded:Connect(function(obj)
+    if obj:IsA("Model") and CHEST_COLORS[obj.Name] then
+        task.wait(0.1) -- Pequeno delay para garantir que o objeto foi completamente carregado
+        if espEnabled then
+            updateChestESP()
+        end
+    end
+end)
+
+-- Loop principal para atualizar o ESP de baús
+spawn(function()
+    while wait() do
+        if espEnabled then
+            pcall(updateChestESP)
+        end
+    end
+end)
+
+-- Seção ESP
+local ESP = Visual:AddSection({
+    Name = "ESP",
+    Position = 'left'
+})
+
+-- Seção Item ESP
+local ItemESP = Visual:AddSection({
+    Name = "Item ESP",
+    Position = 'center'
+})
+
+-- Toggles para ESP
+ESP:AddToggle({
+    Name = "Enabled"
+})
+
+ESP:AddToggle({
+    Name = "Box"
+})
+
+ESP:AddToggle({
+    Name = "Name"
+})
+
+ESP:AddToggle({
+    Name = "Health"
+})
+
+ESP:AddToggle({
+    Name = "Weapon"
+})
+
+ESP:AddToggle({
+    Name = "Skeleton"
+})
+
+ESP:AddToggle({
+    Name = "Offscreen"
+})
+
+-- Toggle para baús
+local chestToggle = ItemESP:AddToggle({
+    Name = "Chest",
+    Default = false,
+    Callback = function(value)
+        espEnabled = value
+        if not value then
+            removeAllChestESP()
+            -- Limpar o cache quando desativar
+            table.clear(processedChests)
+        else
+            -- Forçar uma nova verificação de baús ao ativar
+            lastChestCheck = 0
+        end
+    end
+})
+
+-- Slider para ajustar o alcance do ESP de baús
+ItemESP:AddSlider({
+    Name = "Chest Esp Range",
+    Min = 100,
+    Max = 5000,
+    Default = 1000,
+    Rounding = 0,
+    Type = " studs",
+    Callback = function(value)
+        maxDistance = value
+    end
+})
+
+-- Outros itens do menu
+ItemESP:AddToggle({
+    Name = "Itens"
+})
+
+ItemESP:AddToggle({
+    Name = "NPCs"
+})
+
+ItemESP:AddToggle({
+    Name = "Quests"
+})
+
+ItemESP:AddToggle({
+    Name = "Recursos"
+})
+
+do
+    local Weapon = Rage:AddSection({
+        Position = 'left',
+        Name = "WEAPON"
+    });
+    
+    local Extra = Rage:AddSection({
+        Position = 'center',
+        Name = "EXTREA"
+    });
+    
+    local General = Rage:AddSection({
+        Position = 'right',
+        Name = "GENERAL"
+    });
+    
+    Weapon:AddSlider({
+        Name = "Hit-chance",
+        Default = 61
+    })
+    
+    Weapon:AddSlider({
+        Name = "Pointscale",
+        Type = "%",
+        Default = 0
+    })
+    
+    Weapon:AddSlider({
+        Name = "Min-damage",
+        Type = "%",
+        Default = 85
+    })
+    
+    Weapon:AddDropdown({
+        Name = "Hitboxes",
+        Values = {"Head",'Neck','Arms','Legs'}
+    })
+    
+    Weapon:AddDropdown({
+        Name = "Multipoint",
+        Values = {"Head",'Neck','Arms','Legs'}
+    })
+    
+    Weapon:AddDropdown({
+        Name = "Target selection",
+        Values = {"Damage"},
+        Default = "Damage"
+    })
+    
+    local Autostop = Extra:AddToggle({
+        Name = "Autostop",
+        Option = true;
+    });
+    
+    Autostop.Option:AddToggle({
+        Name = "Something"
+    })
+    
+    Autostop.Option:AddToggle({
+        Name = "Something"
+    })
+    
+    Autostop.Option:AddToggle({
+        Name = "Something"
+    })
+    
+    Autostop.Option:AddToggle({
+        Name = "Something"
+    })
+    
+    Extra:AddToggle({
+        Name = "Autoscope",
+    });
+    
+    Extra:AddToggle({
+        Name = "Ignore limbs on moving",
+    });
+    
+    Extra:AddToggle({
+        Name = "Autorevolver",
+    });
+    
+    General:AddToggle({
+        Name = "Aimbot",
+        Risky = true
+    })
+    
+    General:AddToggle({
+        Name = "Slient aim",
+        Risky = false
+    })
+    
+    General:AddSlider({
+        Name = "Maximum fov",
+        Type = " deg",
+        Default = 0
+    })
+    
+    General:AddToggle({
+        Name = "Autofire",
+        Risky = false
+    })
+    
+    General:AddToggle({
+        Name = "Delay shot",
+        Risky = false
+    })
+    
+    General:AddToggle({
+        Name = "Duck peek assist",
+        Risky = false
+    })
+    
+    General:AddToggle({
+        Name = "Force bodyaim",
+        Risky = false
+    })
+    
+    General:AddToggle({
+        Name = "Force shoot",
+        Risky = false
+    })
+    
+    General:AddToggle({
+        Name = "Headshot only",
+        Risky = false
+    })
+    
+    General:AddToggle({
+        Name = "Knife bot",
+        Risky = false
+    })
+    
+    General:AddToggle({
+        Name = "Zeus bot",
+        Risky = false
+    })
+    
+    local NoSpread = General:AddToggle({
+        Name = "Nospread",
+        Risky = false,
+        Option = true
+    })
+    
+    NoSpread.Option:AddToggle({
+        Name = "Something"
+    })
+
+    NoSpread.Option:AddToggle({
+        Name = "Something"
+    })
+
+    NoSpread.Option:AddToggle({
+        Name = "Something"
+    })
+
+    NoSpread.Option:AddToggle({
+        Name = "Something"
+    })
+    
+    local Doubletap = General:AddToggle({
+        Name = "Doubletap",
+        Risky = true,
+        Option = true
+    })
+
+    Doubletap.Option:AddToggle({
+        Name = "Something"
+    })
+
+    Doubletap.Option:AddToggle({
+        Name = "Something"
+    })
+
+    Doubletap.Option:AddToggle({
+        Name = "Something"
+    })
+
+    Doubletap.Option:AddToggle({
+        Name = "Something"
+    })
+    
+    General:AddButton({
+        Name = "Notification",
+        Callback = function()
+            Notification:Notify({
+                Title = "Notification",
+                Content = "Testing Notification",
+                Duration = math.random(3,7),
+                Icon = "info"
+            })
+        end,
+    })
+end
+
+do
+    local Aim = Legit:AddSection({
+        Position = 'left',
+        Name = "AIM"
+    });
+    
+    local Rcs = Legit:AddSection({
+        Position = 'left',
+        Name = "RCS"
+    });
+
+    local Trigger = Legit:AddSection({
+        Position = 'center',
+        Name = "TRIGGER"
+    });
+    
+    local Backtrack = Legit:AddSection({
+        Position = 'center',
+        Name = "BACKTRACK"
+    });
+
+    local General = Legit:AddSection({
+        Position = 'right',
+        Name = "GENERAL"
+    });
+    
+    Aim:AddToggle({
+        Name = "Aim assist"
+    })
+    
+    Aim:AddDropdown({
+        Name = "Mode",
+        Default = "Adaptive",
+        Values = {"Adaptive","value 1",'Value 2'}
+    })
+    
+    Aim:AddDropdown({
+        Name = "Hitboxes",
+        Multi = true,
+        Default = {
+            ["Head"] = true
+        },
+        Values = {
+            "Head",
+            'Neck',
+            'Arms',
+            'Legs'
+        }
+    })
+    
+    Aim:AddSlider({
+        Name = "Multipoint"
+    })
+    
+    Aim:AddSlider({
+        Name = "Aim fov",
+        Round = 1,
+        Default = 0.1,
+        Type = " deg"
+    })
+    
+    Aim:AddSlider({
+        Name = "Aim speed",
+        Default = 1,
+        Type = "%"
+    })
+    
+    Aim:AddSlider({
+        Name = "Min-damage",
+        Default = 61,
+    })
+    
+
+    Aim:AddToggle({
+        Name = "Only in scpoe"
+    })
+    
+
+    Aim:AddToggle({
+        Name = "Autostop"
+    })
+    
+    Rcs:AddToggle({
+        Name = "Recoil control"
+    })
+    
+    Rcs:AddSlider({
+        Name = "Speed",
+        Default = 1,
+        Type = "%"
+    })
+    
+
+    Rcs:AddToggle({
+        Name = "Re-center"
+    })
+    
+
+    Rcs:AddSlider({
+        Name = "Start bullet",
+        Default = 1,
+    })
+    
+    Trigger:AddToggle({
+        Name = "Triggerbot"
+    })
+    
+    Trigger:AddSlider({
+        Name = "Hit-chance",
+        Default = 100,
+        Type = "%"
+    })
+    
+    Trigger:AddToggle({
+        Name = "Use seed when available"
+    })
+    
+    Trigger:AddSlider({
+        Name = "Min-damage",
+        Default = 0,
+        Type = "%"
+    })
+    
+    Trigger:AddSlider({
+        Name = "Reaction time",
+        Default = 0,
+        Type = "ms"
+    })
+    
+    Trigger:AddToggle({
+        Name = "Wait for aim assist hitgroup"
+    })
+    
+    Trigger:AddToggle({
+        Name = "Only in Scope"
+    })
+    
+    Backtrack:AddSlider({
+        Name = "Backtrack",
+        Default = 0,
+        Type = "%"
+    })
+    
+    General:AddToggle({
+        Name = "Enabled"
+    })
+    
+    General:AddDropdown({
+        Name = "Disablers",
+        Values = {"d1",'d2'}
+    })
+    
+    General:AddToggle({
+        Name = "Visualize fov",
+        Option = true
+    }).Option:AddColorPicker({
+        Name = "Color",
+        Default = Color3.fromRGB(255, 34, 75)
+    })
+    
+    General:AddToggle({
+    Name = "Autorevolver"
+})
+
+-- Add a proper slider with these properties
+General:AddSlider({
+    Name = "Distance",  -- Add a proper name for the slider
+    Min = 0,
+    Max = 5000,
+    Default = 1000,
+    Rounding = 0,
+    Suffix = " studs",  -- Changed from Type to Suffix
+    Callback = function(value)
+        maxDistance = value
+    end
+})
+    
+    -- Outros itens do menu
+    ItemESP:AddToggle({
+        Name = "Itens"
+    })
+    
+    ItemESP:AddToggle({
+        Name = "NPCs"
+    })
+    
+    ItemESP:AddToggle({
+        Name = "Quests"
+    })
+    
+    ItemESP:AddToggle({
+        Name = "Recursos"
+    })
+end
