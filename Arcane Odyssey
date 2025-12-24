@@ -50,6 +50,16 @@ if not task then
     }
 end
 
+if not typeof then
+    typeof = function(value)
+        local t = type(value)
+        if t == "table" and value.ClassName then
+            return "Instance"
+        end
+        return t
+    end
+end
+
 if not spawn then
     spawn = function(func)
         local thread = coroutine.create(func)
@@ -76,10 +86,17 @@ if not Instance then
         end
     }
 end
+if not Enum then
+    Enum = {
+        KeyCode = {
+            RightControl = "RightControl"
+        }
+    }
+end
 if not wait then wait = function() end end
 
 -- Inicialização do Fatality
-local Fatality = loadstring(game:HttpGet("https://raw.githubusercontent.com/4lpaca-pin/Fatality/refs/heads/main/src/source.luau"))()
+local Fatality = loadstring(game:HttpGet("https://raw.githubusercontent.com/uYzz1/odisseia/refs/heads/master/Source"))()
 local Notification = Fatality:CreateNotifier()
 
 Fatality:Loader({
@@ -194,9 +211,13 @@ local function updateConfigsList()
         table.insert(configNames, name)
     end
     table.sort(configNames)
-    configsDropdown:Update({
-        Values = configNames
-    })
+    if configsDropdown and typeof(configsDropdown.Update) == "function" then
+        configsDropdown:Update({
+            Values = configNames
+        })
+    else
+        warn("Erro: configsDropdown ou seu método Update não é válido.")
+    end
 end
 
 -- Variável para armazenar o nome da configuração
@@ -236,7 +257,22 @@ ConfigSection:AddButton({
         end
 
         saveConfig(configNameInput)
+        
+        -- Forçar atualização imediata do dropdown
+        task.wait(0.1)
         updateConfigsList()
+        
+        -- Tentar atualizar o dropdown diretamente também
+        if configsDropdown and typeof(configsDropdown.Update) == "function" then
+            local configNames = {}
+            for name, _ in pairs(getgenv().Configs) do
+                table.insert(configNames, name)
+            end
+            table.sort(configNames)
+            configsDropdown:Update({
+                Values = configNames
+            })
+        end
 
         Notification:Notify({
             Title = "Criada",
@@ -366,6 +402,15 @@ if getgenv().AutoLoadConfig and getgenv().Configs[getgenv().AutoLoadConfig] then
         })
     end)
 end
+
+-- Keybind para toggle UI
+ConfigSection:AddKeybind({
+    Name = "Toggle UI",
+    Default = Enum.KeyCode.RightControl,
+    Callback = function()
+        Window:SetVisible(not Window.Visible)
+    end
+})
 
 -- Configuração do ESP
 local maxDistance = 1000 -- Distância máxima em studs

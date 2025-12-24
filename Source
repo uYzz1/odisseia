@@ -3049,14 +3049,35 @@ function Fatality:CreateElements(Parent : Frame , ZIndex : number , Event : Bind
 		return Respons;
 	end;
 
-	function elements:AddDropdown(Config: Dropdown)
-		Config = Config or {};
-		Config.Name = Config.Name or "Dropdown";
-		Config.Option = Config.Option or false;
-		Config.Default = Config.Default or nil;
-		Config.Callback = Config.Callback or function(any) end;
-		Config.Values = Config.Values or {};
-		Config.Multi = Config.Multi or false;
+	function Elements:AddDropdown(Config)
+    local dropdown = {
+        Name = Config.Name,
+        Values = Config.Values or {},
+        Default = Config.Default or "",
+        Callback = Config.Callback,
+        Multi = Config.Multi or false
+    }
+
+    -- 🔧 Método Update adicionado
+    function dropdown:Update(newProps)
+        if newProps.Values then
+            self.Values = newProps.Values
+        end
+        if newProps.Default then
+            self.Default = newProps.Default
+        end
+        if self.Callback then
+            self.Callback(self.Default)
+        end
+    end
+    
+
+    return dropdown
+end
+   
+
+
+    
 
 		local DataParser = function(value)
 			if not value then return 'None'; end;
@@ -3297,6 +3318,23 @@ function Fatality:CreateElements(Parent : Frame , ZIndex : number , Event : Bind
 
 		if Config.Flag then
 			Fatality.WindowFlags[FatalWindow][Config.Flag.."Dropdown"] = Respons;
+		end;
+
+		-- Adiciona método Update para compatibilidade
+		Respons.Update = function(newProps)
+			if newProps.Values then
+				Config.Values = newProps.Values;
+				res:set_data(Config.Values);
+				if not Config.AutoUpdate then
+					res:refresh();
+				end
+			end
+			if newProps.Default then
+				Config.Default = newProps.Default;
+				Value_Text.Text = DataParser(Config.Default);
+				res:change_default(Config.Default);
+				Config.Callback(Config.Default);
+			end
 		end;
 
 		return Respons;
