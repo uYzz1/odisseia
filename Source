@@ -3058,7 +3058,6 @@ function Fatality:CreateElements(Parent : Frame , ZIndex : number , Event : Bind
         Multi = Config.Multi or false
     }
 
-    -- 🔧 Método Update adicionado
     function dropdown:Update(newProps)
         if newProps.Values then
             self.Values = newProps.Values
@@ -3073,7 +3072,7 @@ function Fatality:CreateElements(Parent : Frame , ZIndex : number , Event : Bind
     
 
     return dropdown
-end
+	end
    
 
 
